@@ -165,8 +165,7 @@ function renderScore(result, t) {
   ul.innerHTML = '';
   for (const issue of result.issues.slice(0, 7)) {
     const li = document.createElement('li');
-    li.textContent = t(`issue.${issue.code}`) === `issue.${issue.code}` ? issue.message : t(`issue.${issue.code}`);
-    li.textContent = issue.message; // core messages are already plain EN
+    li.textContent = issue.message; // core messages are plain EN by design
     ul.appendChild(li);
   }
 }
