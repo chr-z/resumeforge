@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4f46e5"/>
+      <stop offset="1" stop-color="#818cf8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.75" cy="0.35" r="0.9">
+      <stop offset="0" stop-color="#4f46e5" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#4f46e5" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="480" fill="url(#bg)"/>
+  <rect width="1200" height="480" fill="url(#glow)"/>
+
+  <!-- left: copy -->
+  <text x="64" y="150" fill="#818cf8" font-size="20" font-weight="700" letter-spacing="3">RESUMEFORGE</text>
+  <text x="64" y="215" fill="#f9fafb" font-size="46" font-weight="800">Resumes robots and humans</text>
+  <text x="64" y="266" fill="#f9fafb" font-size="46" font-weight="800">both approve</text>
+  <text x="64" y="315" fill="#9ca3af" font-size="19">Live ATS score · keyword matcher · one-click PDF · offline PWA</text>
+  <text x="64" y="345" fill="#9ca3af" font-size="19">Free &amp; private — your resume never leaves the device.</text>
+
+  <!-- right: mini resume sheet with score -->
+  <g transform="translate(760,84)">
+    <rect width="360" height="330" rx="16" fill="#ffffff"/>
+    <rect width="360" height="10" rx="5" fill="url(#accent)"/>
+    <text x="24" y="52" fill="#111827" font-size="19" font-weight="800">Ada Lovelace</text>
+    <text x="24" y="74" fill="#6b7280" font-size="12">ada@example.com · +44 20 7946 0958</text>
+
+    <rect x="24" y="92" width="230" height="7" rx="3.5" fill="#e5e7eb"/>
+    <rect x="24" y="106" width="180" height="7" rx="3.5" fill="#e5e7eb"/>
+
+    <rect x="24" y="134" width="70" height="14" rx="4" fill="#eef2ff"/>
+    <text x="32" y="145" fill="#4f46e5" font-size="11" font-weight="700">EXPERIENCE</text>
+    <rect x="24" y="160" width="150" height="9" rx="4" fill="#374151"/>
+    <rect x="180" y="161" width="80" height="7" rx="3.5" fill="#d1d5db"/>
+    <circle cx="30" cy="184" r="2.6" fill="#4f46e5"/>
+    <rect x="40" y="180" width="240" height="7" rx="3.5" fill="#e5e7eb"/>
+    <circle cx="30" cy="202" r="2.6" fill="#4f46e5"/>
+    <rect x="40" y="198" width="200" height="7" rx="3.5" fill="#e5e7eb"/>
+
+    <rect x="24" y="222" width="60" height="14" rx="4" fill="#fef3c7"/>
+    <text x="32" y="233" fill="#b45309" font-size="11" font-weight="700">SKILLS</text>
+    <rect x="24" y="246" width="56" height="16" rx="8" fill="#eef2ff"/>
+    <rect x="88" y="246" width="72" height="16" rx="8" fill="#eef2ff"/>
+    <rect x="168" y="246" width="62" height="16" rx="8" fill="#eef2ff"/>
+
+    <!-- gauge -->
+    <g transform="translate(250,258)">
+      <path d="M0 34 A34 34 0 0 1 68 34" fill="none" stroke="#e5e7eb" stroke-width="10" stroke-linecap="round"/>
+      <path d="M0 34 A34 34 0 0 1 68 34" fill="none" stroke="#16a34a" stroke-width="10" stroke-linecap="round"
+            stroke-dasharray="107" stroke-dashoffset="21"/>
+      <text x="34" y="30" text-anchor="middle" fill="#16a34a" font-size="17" font-weight="800">93</text>
+    </g>
+  </g>
+
+  <text x="600" y="452" text-anchor="middle" fill="#6b7280" font-size="15">chr-z.github.io/resumeforge · MIT · built by @chr-z</text>
+</svg>

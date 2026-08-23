@@ -1,0 +1,13 @@
+{
+  "name": "resumeforge",
+  "version": "1.0.0",
+  "description": "ATS-friendly resume builder with live readiness score. 100% static, zero runtime dependencies.",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

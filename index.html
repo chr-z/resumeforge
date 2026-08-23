@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResumeForge — ATS-friendly resume builder</title>
+  <meta name="description" content="Build an ATS-safe resume with a live score, keyword matcher and one-click PDF. Free, private, offline-first PWA. No signup." />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4f46e5" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%234f46e5'/%3E%3Crect x='26' y='18' width='48' height='64' rx='5' fill='%23fff'/%3E%3Crect x='33' y='30' width='35' height='4' rx='2' fill='%234f46e5'/%3E%3Crect x='33' y='40' width='24' height='3' rx='1.5' fill='%23c7d2fe'/%3E%3Crect x='33' y='47' width='35' height='3' rx='1.5' fill='%23c7d2fe'/%3E%3Ccircle cx='50' cy='71' r='7' fill='%23f59e0b'/%3E%3Cpath d='M46.5 71l3 3 5-6' stroke='%23fff' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">R</span>
+      <span class="name">ResumeForge</span>
+    </div>
+    <div class="controls">
+      <select id="lang-select" title="Language"></select>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1 data-i18n="hero.title">Resumes robots and humans both approve</h1>
+      <p data-i18n="hero.subtitle">Paste the job posting keywords, build your resume, and watch your ATS score climb in real time. Free, private, offline — nothing leaves this device.</p>
+    </section>
+
+    <div class="toolbar no-print">
+      <button id="btn-sample" class="btn ghost" data-i18n="actions.sample">Load sample</button>
+      <button id="btn-clear" class="btn ghost danger" data-i18n="actions.clear">Clear all</button>
+      <span class="spacer"></span>
+      <button id="btn-print" class="btn primary" data-i18n="actions.print">Download PDF</button>
+    </div>
+
+    <div class="layout">
+      <!-- ============ EDITOR ============ -->
+      <section class="editor no-print" aria-labelledby="editor-h">
+        <h2 id="editor-h" class="sr-only" data-i18n="nav.editor">Editor</h2>
+
+        <fieldset class="card">
+          <legend data-i18n="personal.heading">Contact</legend>
+          <div class="grid">
+            <label><span data-i18n="personal.name">Full name</span>
+              <input type="text" id="rf-name" data-i18n-ph="personal.namePh" placeholder="Ada Lovelace" maxlength="80" />
+            </label>
+            <label><span data-i18n="personal.location">City</span>
+              <input type="text" id="rf-location" data-i18n-ph="personal.locationPh" placeholder="San Francisco, CA" maxlength="60" />
+            </label>
+            <label><span data-i18n="personal.email">Email</span>
+              <input type="email" id="rf-email" data-i18n-ph="personal.emailPh" placeholder="ada@example.com" maxlength="120" />
+            </label>
+            <label><span data-i18n="personal.phone">Phone</span>
+              <input type="tel" id="rf-phone" data-i18n-ph="personal.phonePh" placeholder="+1 555 123 4567" maxlength="32" />
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend data-i18n="summary.heading">Professional summary</legend>
+          <label><textarea id="rf-summary" rows="3" data-i18n-ph="summary.ph"
+            placeholder="2–3 lines: who you are, your strongest skills, the value you deliver. 20–120 words is the sweet spot."></textarea></label>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend data-i18n="exp.heading">Experience</legend>
+          <div id="exp-list"></div>
+          <button type="button" id="exp-add" class="btn ghost add-btn" data-i18n="exp.add">+ Add experience</button>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend data-i18n="edu.heading">Education</legend>
+          <div id="edu-list"></div>
+          <button type="button" id="edu-add" class="btn ghost add-btn" data-i18n="edu.add">+ Add education</button>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend data-i18n="skills.heading">Skills</legend>
+          <div class="skill-row">
+            <input type="text" id="skill-input" data-i18n-ph="skills.ph" placeholder="Type a skill and press Enter" maxlength="40" />
+          </div>
+          <p class="hint" data-i18n="skills.hint">Aim for at least 5 skills for ATS coverage.</p>
+          <div id="skill-chips" class="chips"></div>
+        </fieldset>
+      </section>
+
+      <!-- ============ SIDEBAR: SCORE + KEYWORDS + PREVIEW ============ -->
+      <aside class="sidebar">
+        <section class="card score-card" aria-live="polite">
+          <h2 data-i18n="ats.heading">ATS readiness</h2>
+          <div class="score-wrap">
+            <svg viewBox="0 0 120 70" class="gauge" role="img" aria-label="ATS score gauge">
+              <path d="M10 65 A50 50 0 0 1 110 65" fill="none" stroke="#e5e7eb" stroke-width="12" stroke-linecap="round"/>
+              <path id="score-arc" d="M10 65 A50 50 0 0 1 110 65" fill="none" stroke="#4f46e5" stroke-width="12" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="157"/>
+            </svg>
+            <div class="score-num"><span id="score-value">–</span><small data-i18n="ats.scoreLabel">Score</small></div>
+          </div>
+          <p id="score-verdict" class="verdict"></p>
+          <ul id="score-issues" class="issues"></ul>
+        </section>
+
+        <section class="card no-print">
+          <h2 data-i18n="kw.heading">Keyword matcher</h2>
+          <p class="hint" data-i18n="kw.subheading">Paste the job posting keywords — we scan your resume against them.</p>
+          <div class="kw-row">
+            <input type="text" id="kw-input" data-i18n-ph="kw.inputPh" placeholder="react, node.js, aws, ci/cd…" />
+            <button type="button" id="kw-check" class="btn primary sm" data-i18n="kw.add">Check coverage</button>
+          </div>
+          <div id="kw-result" class="kw-result hidden">
+            <p id="kw-coverage" class="coverage"></p>
+            <div class="kw-cols">
+              <div><h3 data-i18n="kw.matched">Matched</h3><ul id="kw-matched"></ul></div>
+              <div><h3 data-i18n="kw.missing">Missing</h3><ul id="kw-missing"></ul></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card preview-card">
+          <h2 data-i18n="preview.heading">Live preview</h2>
+          <article id="resume-preview" class="resume-sheet" aria-label="Resume preview"></article>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="foot no-print">
+    <p data-i18n="footer.privacy">100% in your browser. No account, no server, no telemetry — your resume never leaves this device.</p>
+    <p class="muted">Built by <a href="https://github.com/chr-z">@chr-z</a> · MIT</p>
+  </footer>
+
+  <input type="file" id="import-file" accept="application/json,.json" hidden />
+
+  <script src="js/i18n.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
