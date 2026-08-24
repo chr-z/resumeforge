@@ -12,6 +12,9 @@ const PYODIDE_CORE_FILES = [
   'pyodide.mjs',
   'python_stdlib.zip',
   'pyodide-lock.json',
+  // Node module-format marker: without it, Node's syntax detection chokes on
+  // pyodide.asm.js (require() + top-level await) under node --test.
+  'package.json',
 ];
 
 export default defineConfig({

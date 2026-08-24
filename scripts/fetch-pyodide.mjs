@@ -16,6 +16,8 @@ const CORE = [
   'pyodide.mjs',
   'python_stdlib.zip',
   'pyodide-lock.json',
+  // Node module-format marker (see vite.config.js note)
+  'package.json',
 ];
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
