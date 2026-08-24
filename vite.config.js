@@ -38,6 +38,13 @@ export default defineConfig({
         for (const f of ['sw.js', 'js/i18n.js', 'js/pay.js']) {
           cpSync(f, `dist/${f}`);
         }
+        // PWA: the web app manifest MUST stay at a stable root URL. If left to
+        // Vite's HTML pipeline it gets emitted as a hashed asset
+        // (assets/manifest-<hash>.json), which breaks relative start_url/scope
+        // resolution and the service-worker warm-up list (404 on
+        // ./manifest.json => not installable). Copy it verbatim; the href
+        // rewrite below points the <link> tag back at the stable path.
+        cpSync('manifest.json', 'dist/manifest.json');
         // Inject the full runtime asset list so the app can warm the service
         // worker cache (true offline-first, including the ~9 MB wasm runtime).
         const { readdirSync, readFileSync, writeFileSync } = await import('node:fs');
@@ -49,7 +56,11 @@ export default defineConfig({
         const inject = `<script>window.__RF_RUNTIME_ASSETS__=${JSON.stringify(urls)};</script>`;
         for (const page of ['index.html', 'upgrade.html']) {
           const p = `dist/${page}`;
-          writeFileSync(p, readFileSync(p, 'utf8').replace('</body>', `${inject}</body>`));
+          // Point the manifest <link> back at the stable root URL (Vite hashed
+          // it into assets/); see copy-static above for why this matters.
+          let html = readFileSync(p, 'utf8')
+            .replace(/href="\.?\/?assets\/manifest-[^"]*\.json"/, 'href="manifest.json"');
+          writeFileSync(p, html.replace('</body>', `${inject}</body>`));
         }
       },
     },

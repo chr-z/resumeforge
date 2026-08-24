@@ -26,8 +26,15 @@ jobs:
         run: python3 -m unittest discover -s tests/python -v
       - name: WASM engine parity tests (real Pyodide runtime)
         run: node --test tests/pyodide_engine.test.mjs
+      - name: Stamp service worker cache version
+        run: |
+          SHA=$(git rev-parse --short HEAD)
+          sed -i "s/__RF_CACHE_VERSION__/resumeforge-v2-${SHA}/" sw.js
+          grep -o "resumeforge-v2-[a-f0-9]*" sw.js | head -1
       - name: Build (Vite)
         run: npm run build
+      - name: PWA dist guard (stable manifest URL + SW stamp)
+        run: node scripts/check-dist.mjs
       - name: Guard — no secrets committed
         run: |
           ! grep -rniE '(api[_-]?key|secret|password)\s*[:=]' js/ python/ locales/ *.json 2>/dev/null || true

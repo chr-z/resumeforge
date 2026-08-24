@@ -45,7 +45,8 @@ jobs:
           test -f dist/vendor/pyodide/pyodide.asm.wasm || { echo "missing pyodide.asm.wasm"; exit 1; }
           test -f dist/vendor/pyodide/python_stdlib.zip || { echo "missing python_stdlib.zip"; exit 1; }
           grep -q "__RF_RUNTIME_ASSETS__" dist/index.html || { echo "missing runtime asset list"; exit 1; }
-          ! grep -q "__RF_CACHE_VERSION__" dist/sw.js || { echo "sw cache version not stamped"; exit 1; }
+      - name: PWA dist guard (stable manifest URL + SW stamp)
+        run: node scripts/check-dist.mjs
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
