@@ -4,14 +4,14 @@
 
 # 📄 ResumeForge
 
-**ATS-friendly resume builder with a live readiness score — free, private, offline-first.**
-**Construtor de currículo amigável para ATS com nota de prontidão ao vivo — grátis, privado, offline.**
+**ATS-friendly resume builder with a live readiness score — scored by a real CPython engine running as WebAssembly.**
+**Construtor de currículo amigável para ATS com nota de prontidão ao vivo — o motor de pontuação é CPython compilado pra WASM.**
 
 [![CI](https://github.com/chr-z/resumeforge/actions/workflows/ci.yml/badge.svg)](https://github.com/chr-z/resumeforge/actions/workflows/ci.yml)
 [![Deploy](https://github.com/chr-z/resumeforge/actions/workflows/pages.yml/badge.svg)](https://github.com/chr-z/resumeforge/actions/workflows/pages.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-4f46e5.svg)](LICENSE)
 [![i18n](https://img.shields.io/badge/i18n-EN%20%7C%20PT--BR-blueviolet)](#internationalization--internacionaliza%C3%A7%C3%A3o)
-[![No deps](https://img.shields.io/badge/runtime%20deps-0-37d67a)](package.json)
+[![Python](https://img.shields.io/badge/engine-Python%203.13%20%C2%B7%20WASM-3776ab?logo=python&logoColor=white)](python/rfcore.py)
 [![PWA](https://img.shields.io/badge/PWA-installable-9cf)](manifest.json)
 
 🔗 **Live demo → [chr-z.github.io/resumeforge](https://chr-z.github.io/resumeforge/)** · no signup, works offline after first load
@@ -39,6 +39,7 @@ business but yours.
 | | |
 |---|---|
 | 🎯 **Live ATS score** | Weighted 0–100 gauge across contact info, summary, experience dates, achievement bullets, education and skills — with an actionable fix-list |
+| 🐍 **CPython-in-the-browser engine** | The entire scoring brain is pure Python (`rfcore.py`, stdlib only) executed by a vendored Pyodide/WASM runtime — zero network, fully offline |
 | 🔑 **Keyword matcher** | Paste the job posting keywords; word-boundary matching (`java` ≠ `javascript`) returns matched vs missing with coverage % |
 | 🔢 **Quantified-impact detector** | Flags when fewer than half your bullets contain numbers, % or money — the #1 senior-signal recruiters scan for |
 | ⚡ **Action-verb check** | Detects weak openers ("responsible for…") in EN and PT-BR |
@@ -46,8 +47,8 @@ business but yours.
 | 🖨️ **One-click clean PDF** | Print stylesheet strips all UI chrome — only the single-column sheet hits the paper, exactly what parsers want |
 | 💾 **JSON export/import** | Your data, portable: one click saves everything; import restores it anywhere |
 | 🌎 **EN / PT-BR interface** | Header switcher, persisted choice, plain JSON dictionaries — add a language by adding one file |
-| 📲 **Installable PWA** | Manifest + service worker with stale-while-revalidate caching: opens offline, installs on phone/desktop |
-| 🛡️ **Private by design** | Zero runtime dependencies, zero network calls, zero cookies, zero telemetry |
+| 📲 **Installable PWA** | Manifest + service worker; first visit warms the cache with the full WASM runtime so the app opens offline, Python included |
+| 🛡️ **Private by design** | Zero network calls after load, zero cookies, zero telemetry — even the language runtime ships with the page |
 
 ## 🧠 How the scoring works (the senior-engineer part)
 
@@ -66,7 +67,41 @@ formatting                ALL-CAPS words −5   · floor at 0, cap at 100
 Keyword matching uses **word boundaries** so listing JavaScript never satisfies a `java`
 requirement, and dedupes case-insensitively. Dates accept ISO (`2023-03`), English (`Mar 2023`)
 and Portuguese (`dez/2023`) formats, and "Present"/"Atual" ranges compute live durations.
-Every rule is covered by **14 unit tests** running on Node's built-in test runner in CI.
+
+## 🏗️ Built with Python on WebAssembly
+
+The v1 engine was JavaScript. For v2 the whole business logic was rewritten 1:1 in **pure
+Python** (`python/rfcore.py` — stdlib only, no dependencies) and runs inside the browser via
+[Pyodide](https://pyodide.dev) (CPython 3.13 compiled to WebAssembly, vendored — no CDN):
+
+```
+┌────────────────────────── browser ──────────────────────────┐
+│  UI (vanilla JS)  ⇄  JSON bridge (js/pybridge.js)           │
+│                            ⇄                                │
+│        rfcore.py  ← executed by  Pyodide (CPython/WASM)     │
+│                             ~9 MB wasm, cached by the SW    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+Why it's cool for recruiters:
+
+- **Same code, two worlds** — the identical `rfcore.py` passes native CPython unit tests *and*
+  cross-engine parity tests that boot the real WASM runtime in CI and assert bit-for-bit equal
+  results against the original JS implementation (15 + 15 tests).
+- **True offline-first PWA** — the service worker caches the hashed build outputs *and* the
+  vendored runtime; the page warms the cache automatically after boot.
+- **Zero server** — scoring, keyword matching and text flattening all happen inside your tab.
+
+```bash
+# run everything locally
+node scripts/fetch-pyodide.mjs          # vendor the runtime (~12 MB core files)
+npm install
+npm run test:py                         # native CPython suite (unittest)
+npm test                                # WASM parity suite (boots real Pyodide)
+npm run build                           # static bundle → dist/
+```
+
+Deployed as a static site on GitHub Pages (CI runs both suites before publishing).
 
 ## 🚀 Quick start
 
@@ -74,13 +109,7 @@ Every rule is covered by **14 unit tests** running on Node's built-in test runne
 2. Click **Load sample** to see a 93-score resume in 5 seconds
 3. Make it yours — watch the gauge react to every edit
 4. Paste the job posting keywords into the matcher and close the gaps
-5. Hit **Download PDF** (or install the PWA and work offline)
-
-## 📸 Screenshots
-
-| Editor + live score | Keyword matcher |
-|---|---|
-| ![Editor with live ATS gauge](docs/hero.svg) | Score reacts as you type; fix-list tells you what to change |
+5. Hit **Download PDF** (or install the PWA and work offline — Python included)
 
 ## 💰 Pricing
 
@@ -98,27 +127,16 @@ No ads, no tracking, no dark patterns. The app works fully offline once loaded.
 
 ## 🗺️ Roadmap
 
-- [ ] v1.1 — multiple resume profiles + duplicate
-- [ ] v1.2 — extra ATS-friendly templates (serif, two-tone)
-- [ ] v1.3 — import from LinkedIn / JSON Resume standard
-- [ ] v1.4 — cover-letter forge sharing your master profile
-- [ ] v2.0 — optional Pro license key (offline validation, like our other ForgeKit apps)
+- [x] v2.0 — ATS engine rewritten in pure Python running on CPython/WASM (Pyodide)
+- [ ] v2.1 — multiple resume profiles + duplicate
+- [ ] v2.2 — extra ATS-friendly templates (serif, two-tone)
+- [ ] v2.3 — import from LinkedIn / JSON Resume standard
+- [ ] v2.4 — cover-letter forge sharing your master profile
 
 ## ♿ Accessibility
 
 Keyboard-navigable forms with visible focus rings, `aria-live` on the score panel, semantic
 landmarks, reduced-motion support, and color pairs tested for WCAG AA contrast.
-
-## 🏗️ Tech notes
-
-Vanilla JS ES modules, **zero runtime dependencies** (~15 KB of app code). Business logic lives
-in [`js/core.js`](js/core.js) as pure functions — tested with Node's built-in runner:
-
-```bash
-node --test tests/*.test.js   # 14 tests, no npm install needed
-```
-
-Deployed as a static site on GitHub Pages (CI runs tests before publishing).
 
 ## Internationalization / Internacionalização
 
@@ -130,7 +148,7 @@ language is one JSON file away.
 ## 🤝 Contributing
 
 Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Bug reports with a failing
-`node --test` case get priority.
+test case get priority.
 
 ## 📄 License
 

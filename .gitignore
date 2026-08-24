@@ -1,0 +1,8 @@
+node_modules/
+dist/
+# Pyodide release tarball + extracted runtime (only the 5 core files are
+# needed, but keeping them out of git avoids a ~400 MB working tree; CI and
+# local builds download/extract on demand — see scripts/fetch-pyodide.mjs)
+vendor/pyodide/*
+vendor/*.tar.bz2
+!vendor/pyodide/.gitkeep

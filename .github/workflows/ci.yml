@@ -15,9 +15,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Run business-logic tests (zero dependencies)
-        run: node --test tests/*.test.js
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch vendored Pyodide runtime (core files)
+        run: node scripts/fetch-pyodide.mjs
+      - name: Install build deps
+        run: npm install
+      - name: Native Python unit tests (CPython)
+        run: python3 -m unittest discover -s tests/python -v
+      - name: WASM engine parity tests (real Pyodide runtime)
+        run: node --test tests/pyodide_engine.test.mjs
+      - name: Build (Vite)
+        run: npm run build
       - name: Guard — no secrets committed
         run: |
-          ! grep -rniE '(api[_-]?key|secret|password)\s*[:=]' js/ locales/ *.json 2>/dev/null || true
+          ! grep -rniE '(api[_-]?key|secret|password)\s*[:=]' js/ python/ locales/ *.json 2>/dev/null || true
           echo "ok: no secrets found"

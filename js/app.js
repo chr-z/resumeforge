@@ -1,18 +1,12 @@
-// ResumeForge — UI wiring. All ATS logic lives in core.js (tested); this file only glues DOM.
+// ResumeForge v2 — UI wiring. All ATS logic lives in the Python engine
+// (python/rfcore.py) running on Pyodide/CPython-WASM; this file only glues DOM.
+// Ported 1:1 from js/app.js @ e6c4560 — same features, same UX.
 'use strict';
 
-import {
-  atsScore,
-  atsKeywords,
-  parseMonth,
-  isPresent,
-  monthsBetween,
-  humanDuration,
-  resumeToText,
-} from './core.js';
+import { callEngine } from './pybridge.js';
 
 const $ = (id) => document.getElementById(id);
-const STORE_KEY = 'rf_resume_v1';
+const STORE_KEY = 'rf_resume_v1'; // unchanged: v1 drafts survive the rewrite
 
 // ---------- state ----------
 let resume = blankResume();
@@ -32,7 +26,7 @@ function save() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(resume)); } catch { /* ignore */ }
 }
 
-// ---------- sample data ----------
+// ---------- sample data (identical to v1) ----------
 const SAMPLE = {
   name: 'Ada Lovelace',
   location: 'London, UK',
@@ -175,23 +169,39 @@ function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+/** Range label using engine-computed metadata (see enrichExperience/expMeta). */
 function rangeLabel(e, t) {
-  const fromISO = parseMonth(e.from);
-  const toISO = parseMonth(e.to);
-  let left = e.from || '';
-  let right = isPresent(e.to) || (!e.to && !fromISO) ? t('preview.present') : (e.to || '');
-  if (right === '') right = e.to;
-  const months = fromISO && toISO ? monthsBetween(fromISO, toISO) : null;
-  const dur = months !== null ? ` · ${humanDuration(months)}` : '';
-  return `${left} — ${right}${dur}`;
+  const m = expMeta.get(e) || {};
+  const right = m.present || (!e.to && !m.fromISO) ? t('preview.present') : (e.to || '');
+  const dur = m.duration ? ` · ${m.duration}` : '';
+  return `${e.from || ''} — ${right}${dur}`;
 }
 
-function renderPreview(t) {
+// Engine-derived metadata per experience row (kept OUT of state/localStorage).
+const expMeta = new WeakMap();
+
+async function enrichExperience() {
+  await Promise.all(resume.experience.map(async (e) => {
+    const fromISO = await callEngine('parseMonth', e.from || '');
+    const toISO = await callEngine('parseMonth', e.to || '');
+    const months = (fromISO && toISO) ? await callEngine('monthsBetween', fromISO, toISO) : null;
+    expMeta.set(e, {
+      fromISO,
+      present: await callEngine('isPresent', e.to || ''),
+      duration: months !== null && months !== undefined
+        ? await callEngine('humanDuration', months)
+        : null,
+    });
+  }));
+}
+
+async function renderPreview(t) {
   const el = $('resume-preview');
   if (!resume.name && !resume.summary && resume.experience.length === 0 && resume.education.length === 0 && resume.skills.length === 0) {
     el.innerHTML = `<p class="empty-hint">${esc(t('kw.empty'))}</p>`;
     return;
   }
+  await enrichExperience();
   const parts = [];
   parts.push(`<header><h3>${esc(resume.name) || '&nbsp;'}</h3>`);
   const contact = [resume.location, resume.email, resume.phone].filter(Boolean).map(esc).join(' · ');
@@ -220,12 +230,20 @@ function renderPreview(t) {
 }
 
 // ---------- master update ----------
-function update() {
+let updateSeq = 0;
+async function update() {
   readRowsIntoState();
   save();
+  const seq = ++updateSeq;
   const t = window.RFI18N.t;
-  renderScore(atsScore(resume), t);
-  renderPreview(t);
+  const result = await callEngine('atsScore', resume);
+  if (seq !== updateSeq) return; // stale response — a newer input superseded it
+  renderScore(result, t);
+  await renderPreview(t);
+}
+
+function updateScoreOnly() {
+  update();
 }
 
 // ---------- import/export ----------
@@ -237,6 +255,7 @@ function exportJSON() {
   a.click();
   URL.revokeObjectURL(a.href);
 }
+void exportJSON;
 
 function importJSON(file) {
   const reader = new FileReader();
@@ -277,18 +296,19 @@ let lastKeywords = [];
 
 function runKeywordCheck() {
   const raw = $('kw-input').value;
-  lastKeywords = raw.split(/[,\n;]/).map((s) => s.trim()).filter(Boolean);
+  lastKeywords = raw.split(/[,;\n]/).map((s) => s.trim()).filter(Boolean);
   renderKeywords(window.RFI18N.t);
 }
 
-function renderKeywords(t) {
+async function renderKeywords(t) {
   const box = $('kw-result');
   if (lastKeywords.length === 0) {
     box.classList.add('hidden');
     return;
   }
   box.classList.remove('hidden');
-  const res = atsKeywords(resumeToText(resume), lastKeywords);
+  const text = await callEngine('resumeToText', resume);
+  const res = await callEngine('atsKeywords', text, lastKeywords);
   $('kw-coverage').textContent = t('kw.coverage')
     .replace('{pct}', String(res.score))
     .replace('{matched}', String(res.matched.length))
@@ -344,17 +364,17 @@ function wire() {
       update();
     }
   });
-  $('exp-add').addEventListener('click', () => {
+  $('exp-add')?.addEventListener('click', () => {
     $('exp-list').appendChild(expRow());
     window.RFI18N.applyStatic?.();
   });
-  $('edu-add').addEventListener('click', () => {
+  $('edu-add')?.addEventListener('click', () => {
     $('edu-list').appendChild(eduRow());
     window.RFI18N.applyStatic?.();
   });
 
   // skills
-  $('skill-input').addEventListener('keydown', (ev) => {
+  $('skill-input')?.addEventListener('keydown', (ev) => {
     if (ev.key === 'Enter') {
       ev.preventDefault();
       const v = $('skill-input').value.trim();
@@ -368,40 +388,34 @@ function wire() {
   });
 
   // toolbar
-  $('btn-sample').addEventListener('click', () => {
+  $('btn-sample')?.addEventListener('click', () => {
     resume = JSON.parse(JSON.stringify(SAMPLE));
     rebuildForms();
     update();
   });
-  $('btn-clear').addEventListener('click', () => {
+  $('btn-clear')?.addEventListener('click', () => {
     if (confirm(window.RFI18N.t('confirm.clear'))) {
       resume = blankResume();
       rebuildForms();
       update();
     }
   });
-  $('btn-print').addEventListener('click', () => window.print());
+  $('btn-print')?.addEventListener('click', () => window.print());
 
   // keywords
-  $('kw-check').addEventListener('click', runKeywordCheck);
-  $('kw-input').addEventListener('keydown', (ev) => {
+  $('kw-check')?.addEventListener('click', runKeywordCheck);
+  $('kw-input')?.addEventListener('keydown', (ev) => {
     if (ev.key === 'Enter') { ev.preventDefault(); runKeywordCheck(); }
   });
   document.addEventListener('resumeforge:langchange', () => renderKeywords(window.RFI18N.t));
 
   // import/export
-  $('import-file').addEventListener('change', (ev) => {
+  $('import-file')?.addEventListener('change', (ev) => {
     if (ev.target.files && ev.target.files[0]) importJSON(ev.target.files[0]);
     ev.target.value = '';
   });
 
-  document.addEventListener('resumeforge:langchange', update);
-}
-
-function updateScoreOnly() {
-  const t = window.RFI18N.t;
-  renderScore(atsScore(resume), t);
-  renderPreview(t);
+  document.addEventListener('resumeforge:langchange', () => update());
 }
 
 // expose applyStatic for dynamically added rows
@@ -416,3 +430,30 @@ update();
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
 }
+
+// ---------- Python engine status + offline warm-up ----------
+(async () => {
+  try {
+    const t0 = performance.now();
+    await callEngine('parseMonth', 'Mar 2023'); // forces full WASM boot
+    const ms = Math.round(performance.now() - t0);
+    const st = document.getElementById('py-status');
+    if (st) {
+      st.textContent = `⚡ Python engine ready (CPython · Pyodide/WASM · booted in ${ms}ms)`;
+      setTimeout(() => { st.hidden = true; }, 4000);
+    }
+    // Warm the SW runtime cache with the hashed build outputs so the whole
+    // app (including the ~12 MB vendored CPython/WASM runtime) works offline.
+    if (navigator.serviceWorker.controller && window.__RF_RUNTIME_ASSETS__) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'RF_WARM_RUNTIME',
+        urls: window.__RF_RUNTIME_ASSETS__,
+      });
+    }
+  } catch (err) {
+    const st = document.getElementById('py-status');
+    if (st) st.textContent = '⚠ ' + (err && err.message ? err.message : String(err));
+    console.error('Pyodide boot failed', err);
+  }
+})();
+

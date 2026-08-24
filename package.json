@@ -1,13 +1,21 @@
 {
   "name": "resumeforge",
-  "version": "1.0.0",
-  "description": "ATS-friendly resume builder with live readiness score. 100% static, zero runtime dependencies.",
+  "version": "2.0.0",
+  "description": "ATS-friendly resume builder with live readiness score. Engine in pure Python (CPython via Pyodide/WASM), UI in vanilla JS. 100% static.",
   "private": true,
+  "type": "module",
   "scripts": {
-    "test": "node --test tests/"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.mjs",
+    "test:py": "python3 -m unittest discover -s tests/python"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
   },
   "license": "MIT"
 }

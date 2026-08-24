@@ -1,17 +1,16 @@
-// ResumeForge service worker — offline-first, cache-versioned.
-const CACHE_NAME = ''resumeforge-v2'
+// ResumeForge v2 service worker — offline-first, cache-versioned.
+// The placeholder __RF_CACHE_VERSION__ is stamped by CI with the commit SHA.
+const CACHE_NAME = '__RF_CACHE_VERSION__';
 const PRECACHE_URLS = [
   './',
   './index.html',
+  './upgrade.html',
   './css/style.css',
-  './js/core.js',
-  './js/app.js',
   './js/i18n.js',
+  './js/pay.js',
+  './manifest.json',
   './locales/en.json',
   './locales/pt-BR.json',
-  './manifest.json',
-  './js/pay.js',
-  './upgrade.html'
 ];
 
 self.addEventListener('install', (event) => {
@@ -31,6 +30,7 @@ self.addEventListener('activate', (event) => {
 });
 
 // Offline-first: serve from cache, refresh in background when online.
+// Hashed build outputs (JS/CSS/wasm) are cached at runtime.
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   event.respondWith(
@@ -47,4 +47,13 @@ self.addEventListener('fetch', (event) => {
       return cached || fetchPromise;
     })
   );
+});
+
+// Let the page warm the runtime cache after the Pyodide engine finishes loading.
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'RF_WARM_RUNTIME' && Array.isArray(event.data.urls)) {
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(event.data.urls.map((u) => cache.add(u).catch(() => {})))
+    );
+  }
 });
