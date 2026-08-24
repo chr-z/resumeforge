@@ -58,6 +58,14 @@
     .footnote a { color: var(--primary); }
     .licensed-note { display: none; text-align: center; background: rgba(34,197,94,.08); border: 1px solid rgba(34,197,94,.35); color: var(--success); border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem; }
     .licensed-note.show { display: block; }
+    /* P7 (pay.js v4): aviso de expiração próxima — o pay.js põe
+       is-pro-expiring em <html> quando faltam <= 7 dias */
+    html.is-pro-expiring #already-pro { background: rgba(245,158,11,.08); border-color: rgba(245,158,11,.45); color: #fbbf24; }
+    html.is-pro-expiring #already-pro a { color: inherit; }
+    #warn-exp { display: block; margin-top: .35rem; font-weight: 700; }
+    #warn-exp[hidden] { display: none; }
+
+
 
     dialog { border: none; border-radius: 12px; background: var(--card); color: var(--text); padding: 1.4rem; max-width: 380px; width: calc(100% - 2rem); }
     dialog::backdrop { background: rgba(0,0,0,.65); }
@@ -75,7 +83,10 @@
     </header>
 
     <div id="already-pro" class="licensed-note">
-      Licença Pro ativa neste navegador — tudo liberado. (<a href="#" id="link-app" style="color:inherit">voltar ao app</a>)
+      Licença Pro ativa neste navegador — tudo liberado.
+      <span data-pay-exp></span>
+      <span id="warn-exp" hidden>⚠ <span data-pay-days></span> — renove pra não perder os benefícios.</span>
+      (<a href="#" id="link-app" style="color:inherit">voltar ao app</a>)
     </div>
 
     <div class="grid" id="plans">
@@ -182,6 +193,23 @@
       document.addEventListener('pay:state', function (ev) {
         if (ev.detail && ev.detail.unlocked) showAlreadyPro();
       });
+      // P7 (pay.js v4): estado derivado — aviso de expiração quando <= 7 dias
+      (function warnExpiry() {
+        function refresh() {
+          var st = window.PayModule.state();
+          var expiringSoon = st.licensed && st.status === 'expiring';
+          var w = $('#warn-exp');
+          if (!w) return;
+          if (expiringSoon && st.daysLeft !== null) {
+            w.removeAttribute('hidden');
+          } else {
+            w.setAttribute('hidden', '');
+          }
+        }
+        document.addEventListener('pay:state', refresh);
+        setInterval(refresh, 6 * 3600 * 1000); // página aberta há dias: re-checa
+        refresh();
+      })();
 
       // abre campo de email ao clicar no CTA principal
       $('#btn-buy').addEventListener('click', function () {
