@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResumeForge — Assinar Pro R$24</title>
+  <meta name="description" content="ResumeForge: comece grátis, evolua quando faturar. Pro sem limites, direto no navegador, sem cadastro." />
+  <meta name="theme-color" content="#4f46e5" />
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4f46e5;
+      --bg: #151b24;
+      --card: #1e2530;
+      --line: #303641;
+      --text: #d0d5dd;
+      --muted: #8b95a8;
+      --success: #22c55e;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 2rem 1rem 3rem; }
+    .header { text-align: center; margin-bottom: 2rem; }
+    .header h1 { font-size: 2.2rem; margin-bottom: .3rem; color: #fff; }
+    .header h1 a { color: inherit; text-decoration: none; }
+    .subtitle { color: var(--muted); font-size: 1.05rem; }
+
+    .grid { display: grid; gap: 1.25rem; margin-bottom: 1.75rem; }
+    @media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 1.4rem; position: relative; }
+    .card.pro { border-color: var(--primary); }
+    .card.pro .tag { background: var(--primary); }
+    .tag { position: absolute; top: -10px; right: 14px; background: var(--line); color: #151b24; font-size: .7rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; }
+    .plan-name { font-size: 1.05rem; color: var(--muted); margin: 0 0 .6rem; }
+    .price { font-size: 2.1rem; font-weight: 800; color: #fff; margin: 0 0 1rem; }
+    .price small { font-size: .85rem; font-weight: 400; color: var(--muted); margin-left: 6px; }
+    ul.features { list-style: none; padding: 0; margin: 0 0 1.3rem; }
+    ul.features li { padding: .42rem 0; border-bottom: 1px solid var(--line); display: flex; gap: .5rem; align-items: baseline; }
+    ul.features li:last-child { border-bottom: none; }
+    ul.features .ok { color: var(--success); }
+    ul.features .no { color: var(--muted); text-decoration: line-through; }
+
+    .cta { width: 100%; padding: .9rem 1rem; font-size: 1.05rem; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; transition: background .15s; }
+    .cta.primary { background: var(--primary); color: #fff; }
+    .cta.primary:hover { filter: brightness(1.1); }
+    .cta.primary[disabled] { opacity: .55; cursor: wait; }
+    .cta.secondary { background: transparent; color: var(--muted); border: 1px solid var(--line); text-align: center; display: block; text-decoration: none; }
+
+    .email-row { display: none; gap: .5rem; margin-top: .9rem; }
+    .email-row.open { display: flex; flex-wrap: wrap; }
+    .email-row input { flex: 1; min-width: 0; padding: .7rem .8rem; border-radius: 8px; border: 1px solid var(--line); background: #141922; color: var(--text); font-size: .95rem; }
+    .email-row input:focus { outline: 2px solid var(--primary); border-color: transparent; }
+    .status { min-height: 1.2em; font-size: .92rem; margin-top: .8rem; color: var(--success); }
+    .status.pay-error { color: #f87171; }
+
+    .footnote { text-align: center; color: var(--muted); font-size: .88rem; line-height: 1.6; }
+    .footnote a { color: var(--primary); }
+    .licensed-note { display: none; text-align: center; background: rgba(34,197,94,.08); border: 1px solid rgba(34,197,94,.35); color: var(--success); border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem; }
+    .licensed-note.show { display: block; }
+
+    dialog { border: none; border-radius: 12px; background: var(--card); color: var(--text); padding: 1.4rem; max-width: 380px; width: calc(100% - 2rem); }
+    dialog::backdrop { background: rgba(0,0,0,.65); }
+    dialog input { width: 100%; padding: .7rem .8rem; border-radius: 8px; border: 1px solid var(--line); background: #141922; color: var(--text); margin: .6rem 0 1rem; box-sizing: border-box; }
+    dialog menu { display: flex; gap: .6rem; justify-content: flex-end; padding: 0; margin: 0; }
+    dialog button { padding: .55rem 1rem; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--text); cursor: pointer; }
+    dialog button.confirm { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <h1><a href="./">ResumeForge</a></h1>
+      <p class="subtitle">Comece grátis. Evolua quando faturar.</p>
+    </header>
+
+    <div id="already-pro" class="licensed-note">
+      Licença Pro ativa neste navegador — tudo liberado. (<a href="#" id="link-app" style="color:inherit">voltar ao app</a>)
+    </div>
+
+    <div class="grid" id="plans">
+      <!-- FREE -->
+      <div class="card free">
+        <div class="plan-name">Free</div>
+        <div class="price">R$0 <small>para sempre</small></div>
+        <ul class="features">
+          <li><span class="ok">✓</span> Montador de currículo com score ATS</li>
+          <li><span class="ok">✓</span> Compatibilidade com a vaga em tempo real</li>
+          <li><span class="ok">✓</span> PDF via impressão</li>
+          <li><span class="no">✗</span> Marca “Feito no ResumeForge” no PDF</li>
+          <li><span class="no">✗</span> Só o template padrão</li>
+        </ul>
+        <a class="cta secondary" href="./">Usar grátis</a>
+      </div>
+
+      <!-- PRO -->
+      <div class="card pro">
+        <div class="tag">Mais popular</div>
+        <div class="plan-name">Pro vitalícia</div>
+        <div class="price">R$24 <small>pago uma vez, é seu</small></div>
+        <ul class="features">
+          <li><span class="ok">✓</span> PDF sem nenhuma marca do app</li>
+          <li><span class="ok">✓</span> 12 templates premium</li>
+          <li><span class="ok">✓</span> Exportação limpa pra candidaturas sérias</li>
+          <li><span class="ok">✓</span> Atualizações vitalícias</li>
+        </ul>
+
+        <button class="cta primary" id="btn-buy" data-pay-button>Liberar Pro agora — R$24</button>
+
+        <div class="email-row" id="email-row">
+          <input type="email" id="pay-email" data-pay-email placeholder="seu@email.com"
+                 autocomplete="email" inputmode="email" aria-label="Email para receber a licença" />
+          <button class="cta primary" style="width:auto;padding:.7rem 1.1rem" id="btn-checkout">Ir ao pagamento</button>
+        </div>
+        <p class="status" data-pay-status role="status" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <footer class="footnote">
+      <p>Pagamento único de R$24 — menos que 1% de um salário a mais na próxima vaga. Pagamento processado pelo <strong>Asaas</strong> (PIX ou cartão).
+        <a href="#" id="link-guarantee">7 dias de garantia</a>.</p>
+      <p>Já pagou e está em outro dispositivo? <a href="#" id="link-recover">Recuperar licença</a>.</p>
+    </footer>
+  </div>
+
+  <!-- garantia -->
+  <dialog id="dlg-guarantee">
+    <h3 style="margin-top:0">Garantia de 7 dias</h3>
+    <p>Pagou e não gostou? Manda um email pra <a href="mailto:suporte@chr-z.dev" style="color:var(--primary)">suporte@chr-z.dev</a>
+       com o email da compra dentro de 7 dias que devolvemos 100%.</p>
+    <menu><button class="js-close confirm">Entendi</button></menu>
+  </dialog>
+
+  <!-- recuperação de licença -->
+  <dialog id="dlg-recover">
+    <h3 style="margin-top:0">Recuperar licença</h3>
+    <p style="font-size:.9rem;color:var(--muted)">Informe o email da compra e o ID do pagamento
+       (vem no final da URL de retorno depois de pagar).</p>
+    <input type="email" id="rec-email" placeholder="seu@email.com" autocomplete="email" />
+    <input type="text" id="rec-payment" placeholder="ID do pagamento (pay_...)" spellcheck="false" />
+    <p class="status" id="rec-status"></p>
+    <menu>
+      <button class="js-close">Cancelar</button>
+      <button class="confirm" id="rec-go">Verificar</button>
+    </menu>
+  </dialog>
+
+  <script>
+    // CONFIG ANTES do pay.js: o IIFE lê window.PAY_CONFIG na execução.
+    window.PAY_CONFIG = {
+      product: 'resumeforge',
+      plan: 'pro',
+      apiBase: 'https://chrz-dev.pages.dev',
+      // verifyKey vazia de propósito: segredo HMAC nunca vai pro repo público.
+      // A validação autoritativa é a revalidação online contra a API (HTTPS).
+      verifyKey: '',
+    };
+  </script>
+  <script src="js/pay.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var API = window.PAY_CONFIG.apiBase;
+      var PRODUCT = window.PAY_CONFIG.product;
+
+      function $(s) { return document.querySelector(s); }
+
+      function setStatus(msg, isError) {
+        var el = $('[data-pay-status]');
+        if (!el) return;
+        el.textContent = msg || '';
+        el.classList.toggle('pay-error', !!isError);
+      }
+
+      function showAlreadyPro() {
+        $('#already-pro').classList.add('show');
+        $('#btn-buy').disabled = true;
+        $('#btn-buy').textContent = 'Pro ativo \u2713';
+      }
+
+      document.addEventListener('pay:state', function (ev) {
+        if (ev.detail && ev.detail.unlocked) showAlreadyPro();
+      });
+
+      // abre campo de email ao clicar no CTA principal
+      $('#btn-buy').addEventListener('click', function () {
+        var row = $('#email-row');
+        if (!row.classList.contains('open')) {
+          row.classList.add('open');
+          $('#pay-email').focus();
+          setStatus('');
+          return; // primeiro clique só abre o form; segundo (ou Enter) segue pro checkout
+        }
+      });
+      $('#btn-checkout').addEventListener('click', goCheckout);
+      $('#pay-email').addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') goCheckout();
+      });
+
+      function goCheckout() {
+        var email = $('#pay-email').value.trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+          setStatus('Email inválido — confere aí?', true);
+          return;
+        }
+        var btn = $('#btn-checkout');
+        btn.disabled = true;
+        btn.textContent = 'Abrindo checkout…';
+        window.PayModule.buy(email).then(function (ok) {
+          if (!ok) {
+            btn.disabled = false;
+            btn.textContent = 'Ir ao pagamento';
+          }
+          // sucesso = redirecionou pro Asaas
+        });
+      }
+
+      // volta do checkout: ?paid=&payment=... (callback.successUrl do Asaas)
+      (function handleReturn() {
+        var qs = new URLSearchParams(location.search);
+        if (!qs.get('paid') && !qs.get('payment')) return;
+        var pendKey = 'paym_pending_' + PRODUCT;
+        var entKey = 'paym_entitlement_' + PRODUCT;
+        var pending = null;
+        try { pending = JSON.parse(localStorage.getItem(pendKey) || 'null'); } catch (e) {}
+        if (qs.get('payment') && pending) {
+          pending.paymentId = qs.get('payment');
+          localStorage.setItem(pendKey, JSON.stringify(pending));
+        } else if (qs.get('payment') && !pending) {
+          // usuário limpou storage entre telas: reconstrói pendência pelo retorno
+          var lic = null;
+          try { lic = JSON.parse(localStorage.getItem('paym_license_' + PRODUCT) || 'null'); } catch (e) {}
+          if (lic && lic.email) {
+            localStorage.setItem(pendKey, JSON.stringify({ paymentId: qs.get('payment'), email: lic.email, startedAt: Date.now() }));
+            localStorage.setItem(entKey, JSON.stringify({ paymentId: qs.get('payment'), email: lic.email }));
+          }
+        }
+        setStatus('Pagamento identificado — confirmando com o servidor…');
+      })();
+
+      // recuperação manual (outro dispositivo / storage limpo)
+      $('#link-recover').addEventListener('click', function (e) {
+        e.preventDefault();
+        $('#dlg-recover').showModal();
+      });
+      $('#rec-go').addEventListener('click', function () {
+        var email = $('#rec-email').value.trim();
+        var pid = $('#rec-payment').value.trim();
+        var st = $('#rec-status');
+        st.classList.remove('pay-error');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || !/^[A-Za-z0-9_-]+$/.test(pid)) {
+          st.textContent = 'Preenche email e ID corretos.';
+          st.classList.add('pay-error');
+          return;
+        }
+        fetch(API + '/api/license?payment=' + encodeURIComponent(pid) + '&email=' + encodeURIComponent(email))
+          .then(function (r) { return r.json(); })
+          .then(function (out) {
+            if (out.found && out.license) {
+              localStorage.setItem('paym_pending_' + PRODUCT, JSON.stringify({ paymentId: pid, email: email, startedAt: Date.now() }));
+              localStorage.setItem('paym_entitlement_' + PRODUCT, JSON.stringify({ paymentId: pid, email: email }));
+              location.reload();
+            } else {
+              st.textContent = 'Não encontramos pagamento com esses dados. Confere o email e o ID.';
+              st.classList.add('pay-error');
+            }
+          })
+          .catch(function () {
+            st.textContent = 'Sem conexão — tenta de novo.';
+            st.classList.add('pay-error');
+          });
+      });
+
+      $('#link-guarantee').addEventListener('click', function (e) { e.preventDefault(); $('#dlg-guarantee').showModal(); });
+      $('#link-app').addEventListener('click', function (e) { e.preventDefault(); location.href = './'; });
+      document.querySelectorAll('.js-close').forEach(function (b) {
+        b.addEventListener('click', function () { b.closest('dialog').close(); });
+      });
+
+      // boot: se já tem licença válida (revalidada online pelo pay.js), reflete estado
+      if (window.PayModule.state().licensed) showAlreadyPro();
+    })();
+  </script>
+</body>
+</html>

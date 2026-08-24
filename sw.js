@@ -1,5 +1,5 @@
 // ResumeForge service worker — offline-first, cache-versioned.
-const CACHE_NAME = 'resumeforge-v1';
+const CACHE_NAME = ''resumeforge-v2'
 const PRECACHE_URLS = [
   './',
   './index.html',
@@ -9,7 +9,9 @@ const PRECACHE_URLS = [
   './js/i18n.js',
   './locales/en.json',
   './locales/pt-BR.json',
-  './manifest.json'
+  './manifest.json',
+  './js/pay.js',
+  './upgrade.html'
 ];
 
 self.addEventListener('install', (event) => {

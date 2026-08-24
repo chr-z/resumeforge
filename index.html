@@ -19,7 +19,8 @@
     <div class="controls">
       <select id="lang-select" title="Language"></select>
     </div>
-  </header>
+      <a href="upgrade.html" data-i18n="nav.pro" style="margin-left:.6rem;padding:.38rem .85rem;border-radius:8px;background:#4f46e5;color:#fff;font-weight:700;text-decoration:none;font-size:.85rem;white-space:nowrap">Pro</a>
+</header>
 
   <main>
     <section class="hero">
@@ -133,5 +134,10 @@
 
   <script src="js/i18n.js"></script>
   <script type="module" src="js/app.js"></script>
+  <script>
+    // Pay Module: CONFIG antes do pay.js (o IIFE lê na execução).
+    window.PAY_CONFIG = { product: 'resumeforge', plan: 'pro', apiBase: 'https://chrz-dev.pages.dev', verifyKey: '' };
+  </script>
+  <script src="js/pay.js"></script>
 </body>
 </html>
